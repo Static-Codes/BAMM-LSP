@@ -1,0 +1,4 @@
+server/out
+server/src/out
+out/
+node_modules/

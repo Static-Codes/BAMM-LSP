@@ -1,0 +1,53 @@
+{
+  "name": "bamc-language-support",
+  "displayName": "BAMC Language Support",
+  "description": "Language support for the BAMC format, powered by BrowserAutomationMaster Manager (BAMM!).",
+  "version": "1.0.0",
+  "publisher": "static-codes",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [],
+  "main": "./client/out/src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "bamc",
+        "aliases": [
+          "BAMC",
+          "BAM Config"
+        ],
+        "extensions": [
+          ".bamc",
+          ".BAMC"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bamc",
+        "scopeName": "source.bamc",
+        "path": "./syntaxes/bamc.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "node_modules/typescript/bin/tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "cd client && npm install && cd ../server && npm install"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "@types/vscode": "^1.108.1",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  }
+}
