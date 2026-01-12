@@ -11,7 +11,7 @@ import {
   TextDocumentSyncKind,
   // InitializeResult,
   InsertTextFormat,
-  // TextEdit,
+  TextEdit,
   Range,
   InsertTextMode
 } from 'vscode-languageserver/node';
@@ -71,11 +71,11 @@ const MAIN_ARGS: CompletionItem[] =
   },
 
   {
-    label: 'add-header',
+    label: 'add-headers',
     kind: CompletionItemKind.Function,
-    detail: 'add-header "header-name" "header-value"',
-    documentation: "",
-    insertText: 'add-header "header-name" "header-value"',
+    detail: 'add-headers {"header-name1": "header-value1", ... }',
+    documentation: "Adds a list of headers to the current Selenium session. Input is in the form of a JSON object.",
+    insertText: 'add-headers { "header-name1": "header-value1" }',
     insertTextFormat: InsertTextFormat.Snippet,
   },
   
@@ -84,21 +84,27 @@ const MAIN_ARGS: CompletionItem[] =
     kind: CompletionItemKind.Function,
     insertText: 'click "${1:selector}"',
     insertTextFormat: InsertTextFormat.Snippet,
-    detail: 'click "selector"'
+    detail: 'click "selector"',
+    documentation: "Invokes a standard click event on the selector specified."
   },
 
 
   { 
     label: 'click-at-position', 
     kind: CompletionItemKind.Function, 
-    insertText: 'click-at-position" "x-coordinate", "y-coordinate' 
+    insertText: 'click-at-position" "x-coordinate", "y-coordinate',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'click-at-position" "x-coordinate", "y-coordinate',
+    documentation: "For very specific cases where you have a known X and Y coordinate and need to click at exactly that location, use this."
   },
 
-  { label: 'click-exp',
+  { 
+    label: 'click-exp',
     kind: CompletionItemKind.Function,
     insertText: 'click-exp \'${1:selector}\'',
     insertTextFormat: InsertTextFormat.Snippet,
-    detail: 'click-exp "selector"'
+    detail: "click-exp 'selector'",
+    documentation: "Experimental alternative to click, this utilizes javascript. Use this if click does not fit your needs."
   },
 
 
@@ -131,17 +137,23 @@ const MAIN_ARGS: CompletionItem[] =
 
   { 
     label: 'open-new-tab', 
-    kind: CompletionItemKind.Function 
+    kind: CompletionItemKind.Function,
+    insertText: 'open-new-tab', 
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'open-new-tab',
+    documentation: "Instructs the current Selenium instance to open a new tab."
   },
   
   { 
-    label: 'save-as-html', 
-    kind: CompletionItemKind.Function, 
-    insertText: 'save-as-html "${1:file.html}"', 
-    insertTextFormat: InsertTextFormat.Snippet 
+    label: 'save-as-html',
+    kind: CompletionItemKind.Function,
+    insertText: 'save-as-html "${1:file.html}"',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'save-as-html "${1:file.html}"',
+    documentation: "Saves the current page's source to the HTML file specified."
   },
 
-  // SPECIAL SNIPPET: start-javascript
+  // CURRENTLY THE ONLY SPECIAL BLOCK
   {
     label: 'start-javascript',
     kind: CompletionItemKind.Snippet,
@@ -149,19 +161,6 @@ const MAIN_ARGS: CompletionItem[] =
     documentation: 'Inserts a JavaScript code block structure.',
     insertText: 'start-javascript\n\n// Insert your js code here\n\nend-javascript',
     insertTextFormat: InsertTextFormat.Snippet,
-    // additionalTextEdits: 
-    // [
-    //   {
-    //     "range": {
-
-    //     },
-    //     "end": {
-    //       "line": 26,
-    //       "character": 10
-    //     }
-    //   },
-    //   "newText": "abc"
-    // ],
   },
 
   { 
@@ -253,15 +252,24 @@ documents.onDidChangeContent(change => {
 // AUTOCOMPLETE LOGIC
 connection.onCompletion(
   (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    const doc = documents.get(textDocumentPosition.textDocument.uri);
-    if (!doc) return [];
+    const document = documents.get(textDocumentPosition.textDocument.uri);
+    
+    if (!document) {
+      return [];
+    }
+
+    const position = textDocumentPosition.position;
 
     // Retrieves the current line contents from the start up to the cursor's current position.
-    const lineText = doc.getText({
+    const lineText = document.getText({
       start: { line: textDocumentPosition.position.line, character: 0 },
       end: textDocumentPosition.position
     });
 
+    const replacementRange = Range.create(
+      { line: position.line, character: 0 },
+      position
+    )
 
     if (lineText.match(/^\s*browser\s+$/) || lineText.match(/^\s*browser\s+"/)) {
       return BROWSER_OPTIONS;
@@ -272,9 +280,25 @@ connection.onCompletion(
     }
 
     // If the line is empty or just whitespace/partial word the possible commands are shown.
-    if (!lineText.trim().includes(' ')) {
-      return MAIN_ARGS;
+    if (!lineText.trim().includes(' '))
+    {
+
+      // Mapping over the commands ensuring the TextEdit is only attached to 'start-javascript'
+      return MAIN_ARGS.map(cmd => 
+      {
+        if (cmd.label === 'start-javascript') 
+        {
+            // Cloning the item so the original const isn't modified.
+            return {
+              ...cmd,
+              textEdit: TextEdit.replace(replacementRange, cmd.insertText as string)
+            };
+        }
+
+        return cmd;
+      });
     }
+
 
     return [];
   }

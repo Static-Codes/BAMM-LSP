@@ -7,18 +7,24 @@
       "name": "comment.line.double-slash.bamc"
     },
     {
-      "comment": "Strings",
+      "comment": "Double Quoted Strings",
       "begin": "\"",
       "end": "\"",
       "name": "string.quoted.double.bamc"
     },
     {
+      "comment": "Single Quoted Strings",
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.bamc"
+    },
+    {
       "comment": "BAMC Actions",
-      "match": "\\b(add-header|add-headers|browser|click|click-at-position|click-exp|close-current-tab|end-javascript|fill-text|fill-text-exp|get-text|open-new-tab|save-as-html|save-as-html-exp|select-option|select-element|set-custom-useragent|start-javascript|take-screenshot|visit|wait-for-seconds|feature)\\b",
+      "match": "\\b(add-header|add-headers|browser|click-exp|click|click-at-position|close-current-tab|end-javascript|fill-text-exp|fill-text|get-text|open-new-tab|save-as-html|save-as-html-exp|select-option|select-element|set-custom-useragent|start-javascript|take-screenshot|visit|wait-for-seconds|feature)\\b",
       "name": "keyword.control.bamc"
     },
     {
-      "comment": "Feature Flags (Strings inside feature command)",
+      "comment": "Feature Flags",
       "match": "\"(disable-pycache|disable-ssl|use-http-proxy|use-https-proxy|use-socks4-proxy|use-socks5-proxy)\"",
       "name": "constant.language.bamc"
     },
