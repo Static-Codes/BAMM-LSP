@@ -1,150 +1,239 @@
 import {
   createConnection,
   TextDocuments,
-  Diagnostic,
-  DiagnosticSeverity,
+  // Diagnostic,
+  // DiagnosticSeverity,
   ProposedFeatures,
   InitializeParams,
   CompletionItem,
   CompletionItemKind,
   TextDocumentPositionParams,
   TextDocumentSyncKind,
-  Hover,
-  HoverParams
+  // InitializeResult,
+  InsertTextFormat,
+  // TextEdit,
+  Range,
+  InsertTextMode
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
+var platform = process.platform
+var NLC = platform == "win32" ? "\r\n" : "\n"
+
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-interface BAMCCommand {
-  label: string;
-  syntax: string;
-  description: string;
-}
+// Main Args for BAMM
+const MAIN_ARGS: CompletionItem[] = 
+[
+  {
+    label: 'browser',
+    kind: CompletionItemKind.Keyword,
+    detail: 'browser "type"',
+    documentation: 'Specifies the browser type (chrome/firefox), this must be the first line, or it will default to firefox.',
+    insertText: 'browser' // Auto-adds space
+  },
 
-const BAMC_DATA: Record<string, BAMCCommand> = {
-  "add-header": {
-    label: "add-header",
-    syntax: 'add-header "Name" "Value"',
-    description: "Adds an HTTP Header for the current request."
+  {
+    label: 'feature',
+    kind: CompletionItemKind.Keyword,
+    detail: 'feature "name" ...',
+    documentation: 'Enables specific BAMC features like proxies or SSL settings.',
+    insertText: 'feature ' // Auto-adds space
   },
-  "add-headers": {
-    label: "add-headers",
-    syntax: 'add-headers {"key": "value"}',
-    description: "Adds multiple HTTP Headers via a JSON Object."
+  {
+    label: 'visit',
+    kind: CompletionItemKind.Function,
+    documentation: "Instructs BAMM to make a request to the specified url.",
+    insertText: 'visit "${1:url}"',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'visit "url"'
   },
-  "browser": {
-    label: "browser",
-    syntax: 'browser "chrome"',
-    description: "Specifies the browser type. MUST be the first valid line. Defaults to Firefox if not supplied."
-  },
-  "click": {
-    label: "click",
-    syntax: 'click "selector"',
-    description: "Clicks the specified button element. Supports ID, NAME, TAG NAME, and XPATH selectors."
-  },
-  "click-at-position": {
-    label: "click-at-position",
-    syntax: 'click-at-position "x" "y"',
-    description: "Clicks at a specific X/Y coordinate point on the screen."
-  },
-  "click-exp": {
-    label: "click-exp",
-    syntax: "click-exp 'css.selector'",
-    description: "Alternative to click; uses CSS SELECTOR."
-  },
-  "close-current-tab": {
-    label: "close-current-tab",
-    syntax: "close-current-tab",
-    description: "Closes the current tab. Closes browser if only one tab is open."
-  },
-  "end-javascript": {
-    label: "end-javascript",
-    syntax: "end-javascript",
-    description: "Marks the end of a JavaScript code block."
-  },
-  "fill-text": {
-    label: "fill-text",
-    syntax: 'fill-text "selector" "value"',
-    description: "Assigns the specified value to the selected element."
-  },
-  "fill-text-exp": {
-    label: "fill-text-exp",
-    syntax: 'fill-text-exp "selector" "value"',
-    description: "More advanced version of fill-text."
-  },
-  "get-text": {
-    label: "get-text",
-    syntax: 'get-text "selector"',
-    description: "Gets the text for a specified element."
-  },
-  "open-new-tab": {
-    label: "open-new-tab",
-    syntax: 'open-new-tab "url" "seconds"',
-    description: "Opens a new tab, waits for specified seconds, then visits the URL."
-  },
-  "save-as-html": {
-    label: "save-as-html",
-    syntax: 'save-as-html "filename.html"',
-    description: "Saves the current page's HTML to a file."
-  },
-  "save-as-html-exp": {
-    label: "save-as-html-exp",
-    syntax: 'save-as-html-exp "filename.html"',
-    description: "Saves HTML using alternative logic if standard save fails."
-  },
-  "select-option": {
-    label: "select-option",
-    syntax: 'select-option "selector" index',
-    description: "Selects an <option> from a <select> menu by index."
-  },
-  "select-element": {
-    label: "select-element",
-    syntax: 'select-element "selector"',
-    description: "Selects an element (mostly for manual Python script editing)."
-  },
-  "set-custom-useragent": {
-    label: "set-custom-useragent",
-    syntax: 'set-custom-useragent "string"',
-    description: "Sets a custom user agent at the current point in the script."
-  },
-  "start-javascript": {
-    label: "start-javascript",
-    syntax: "start-javascript",
-    description: "Instructs parser to read following lines as JS code until end-javascript."
-  },
-  "take-screenshot": {
-    label: "take-screenshot",
-    syntax: 'take-screenshot "filename.png"',
-    description: "Takes a screenshot. Recommended to use wait-for-seconds before this."
-  },
-  "visit": {
-    label: "visit",
-    syntax: 'visit "url"',
-    description: "Visits a specified URL."
-  },
-  "wait-for-seconds": {
-    label: "wait-for-seconds",
-    syntax: "wait-for-seconds 1",
-    description: "Waits for the specified number of seconds (supports decimals)."
-  },
-  "feature": {
-    label: "feature",
-    syntax: 'feature "feature-name"',
-    description: "Enables specific BAMC features like disable-ssl or proxies."
-  }
-};
 
-const BAMC_FEATURES = [
-  "disable-pycache",
-  "disable-ssl",
-  "use-http-proxy",
-  "use-https-proxy",
-  "use-socks4-proxy",
-  "use-socks5-proxy"
+  {
+    label: 'wait-for-seconds',
+    kind: CompletionItemKind.Function,
+    insertText: 'wait-for-seconds ${1:1}',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'wait-for-seconds number',
+    documentation: "Instructs Selenium to pause execution for the specified number of second(s). Supports decimals/floats for second values (ie. 0.5, .5)",
+  },
+
+  
+  {
+    label: 'add-header',
+    kind: CompletionItemKind.Function,
+    detail: 'add-header "header-name" "header-value"',
+    documentation: "Adds a header to the current Selenium session.",
+    insertText: 'add-header "header-name" "header-value"',
+    insertTextFormat: InsertTextFormat.Snippet,
+  },
+
+  {
+    label: 'add-header',
+    kind: CompletionItemKind.Function,
+    detail: 'add-header "header-name" "header-value"',
+    documentation: "",
+    insertText: 'add-header "header-name" "header-value"',
+    insertTextFormat: InsertTextFormat.Snippet,
+  },
+  
+  {
+    label: 'click',
+    kind: CompletionItemKind.Function,
+    insertText: 'click "${1:selector}"',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'click "selector"'
+  },
+
+
+  { 
+    label: 'click-at-position', 
+    kind: CompletionItemKind.Function, 
+    insertText: 'click-at-position" "x-coordinate", "y-coordinate' 
+  },
+
+  { label: 'click-exp',
+    kind: CompletionItemKind.Function,
+    insertText: 'click-exp \'${1:selector}\'',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'click-exp "selector"'
+  },
+
+
+  { 
+    label: 'close-current-tab', 
+    kind: CompletionItemKind.Function,
+    insertText: 'close-current-tab',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'close-current-tab',
+    documentation: "Instructs selenium to close the current tab. Please note, this will terminate the current Selenium instance if there is only one open tab."
+  },
+
+  {
+    label: 'fill-text',
+    kind: CompletionItemKind.Function,
+    insertText: 'fill-text "${1:selector}" "${2:value}"',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'fill-text "selector" "value"',
+    documentation: "Fills the 'value' attribute of the specified selector."
+  },
+
+  {
+    label: 'fill-text-exp',
+    kind: CompletionItemKind.Function,
+    insertText: 'fill-text-exp "${1:selector}" "${2:value}"',
+    insertTextFormat: InsertTextFormat.Snippet,
+    detail: 'fill-text-exp "selector" "value"',
+    documentation: "An experimental version of fill-text that utilizes JavaScript. Try this if fill-text doesn't work for your needs."
+  },
+
+  { 
+    label: 'open-new-tab', 
+    kind: CompletionItemKind.Function 
+  },
+  
+  { 
+    label: 'save-as-html', 
+    kind: CompletionItemKind.Function, 
+    insertText: 'save-as-html "${1:file.html}"', 
+    insertTextFormat: InsertTextFormat.Snippet 
+  },
+
+  // SPECIAL SNIPPET: start-javascript
+  {
+    label: 'start-javascript',
+    kind: CompletionItemKind.Snippet,
+    detail: 'JS Block',
+    documentation: 'Inserts a JavaScript code block structure.',
+    insertText: 'start-javascript\n\n// Insert your js code here\n\nend-javascript',
+    insertTextFormat: InsertTextFormat.Snippet,
+    // additionalTextEdits: 
+    // [
+    //   {
+    //     "range": {
+
+    //     },
+    //     "end": {
+    //       "line": 26,
+    //       "character": 10
+    //     }
+    //   },
+    //   "newText": "abc"
+    // ],
+  },
+
+  { 
+    label: 'take-screenshot', 
+    kind: CompletionItemKind.Function, 
+    insertText: 'take-screenshot" "${1:file.png}', 
+    insertTextFormat: InsertTextFormat.Snippet 
+  },
+
+  
+  
 ];
+
+// BROWSER COMMAND
+const BROWSER_OPTIONS: CompletionItem[] = [
+  { label: '"chrome"', kind: CompletionItemKind.Value, insertText: 'chrome' },
+  { label: '"firefox"', kind: CompletionItemKind.Value, insertText: 'firefox' }
+];
+
+// FEATURE COMMANDS
+const FEATURE_OPTIONS: CompletionItem[] = 
+[
+  {
+    label: '"disable-ssl"',
+    kind: CompletionItemKind.Value,
+    detail: 'Disable SSL Validation',
+    insertText: 'disable-ssl'
+  },
+
+  {
+    label: '"disable-pycache"',
+    kind: CompletionItemKind.Value,
+    detail: 'Disable __pycache__',
+    insertText: 'disable-pycache'
+  },
+
+  // PROXIES (With Placeholders)
+  {
+    label: '"use-http-proxy"',
+    kind: CompletionItemKind.Snippet,
+    detail: 'HTTP Proxy with Args',
+    documentation: 'Format: "USER:PASS@IP:PORT" or "NULL:NULL@IP:PORT"',
+    // This snippet inserts the feature name AND the argument template
+    insertText: 'use-http-proxy" "${1:USER:PASS@IP:PORT}',
+    insertTextFormat: InsertTextFormat.Snippet
+  },
+
+  {
+    label: '"use-https-proxy"',
+    kind: CompletionItemKind.Snippet,
+    detail: 'HTTPS Proxy with Args',
+    insertText: 'use-https-proxy" "${1:USER:PASS@IP:PORT}',
+    insertTextFormat: InsertTextFormat.Snippet
+  },
+
+  {
+    label: '"use-socks4-proxy"',
+    kind: CompletionItemKind.Snippet,
+    detail: 'SOCKS4 Proxy',
+    insertText: 'use-socks4-proxy" "${1:USER:PASS@IP:PORT}',
+    insertTextFormat: InsertTextFormat.Snippet
+  },
+
+  {
+    label: '"use-socks5-proxy"',
+    kind: CompletionItemKind.Snippet,
+    detail: 'SOCKS5 Proxy',
+    insertText: 'use-socks5-proxy" "${1:USER:PASS@IP:PORT}',
+    insertTextFormat: InsertTextFormat.Snippet
+  }
+];
+
 
 connection.onInitialize((params: InitializeParams) => {
   return {
@@ -152,103 +241,48 @@ connection.onInitialize((params: InitializeParams) => {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       completionProvider: {
         resolveProvider: true,
-        triggerCharacters: ['"'] // Trigger completion when typing quotes (for features)
-      },
-      hoverProvider: true 
+        triggerCharacters: [' ', '"', NLC] // Triggers on space and quotes, and newline char
+      }
     }
   };
 });
 
-// ------------------------------------------------------------------
-// 1. VALIDATION
-// ------------------------------------------------------------------
 documents.onDidChangeContent(change => {
-  validateTextDocument(change.document);
 });
 
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-  const text = textDocument.getText();
-  // Match the first word of every line
-  const pattern = /^(\s*)([a-zA-Z0-9-]+)/gm;
-  let m: RegExpExecArray | null;
-
-  const diagnostics: Diagnostic[] = [];
-  
-  while ((m = pattern.exec(text))) {
-    const word = m[2]; // The command word
-    
-    // Ignore empty lines or comments
-    if (!word || text.substr(m.index, 2) === '//') continue;
-
-    if (!BAMC_DATA[word]) {
-      const diagnostic: Diagnostic = {
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: textDocument.positionAt(m.index + m[1].length),
-          end: textDocument.positionAt(m.index + m[1].length + word.length)
-        },
-        message: `Unknown BAMC command: '${word}'`,
-        source: 'bamc-lsp'
-      };
-      diagnostics.push(diagnostic);
-    }
-  }
-
-  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-}
-
-// ------------------------------------------------------------------
-// 2. AUTOCOMPLETE
-// ------------------------------------------------------------------
+// AUTOCOMPLETE LOGIC
 connection.onCompletion(
   (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    connection.console.log("User requested autocomplete!");
     const doc = documents.get(textDocumentPosition.textDocument.uri);
     if (!doc) return [];
-    
-    // Simple context check: if inside quotes after "feature", suggest features
-    const line = doc.getText({
+
+    // Retrieves the current line contents from the start up to the cursor's current position.
+    const lineText = doc.getText({
       start: { line: textDocumentPosition.position.line, character: 0 },
       end: textDocumentPosition.position
     });
 
-    if (line.includes('feature') && line.includes('"')) {
-       return BAMC_FEATURES.map(feat => ({
-         label: feat,
-         kind: CompletionItemKind.Value,
-         detail: "Feature Flag"
-       }));
+
+    if (lineText.match(/^\s*browser\s+$/) || lineText.match(/^\s*browser\s+"/)) {
+      return BROWSER_OPTIONS;
     }
 
-    // Otherwise, return all Commands
-    return Object.keys(BAMC_DATA).map(key => ({
-      label: key,
-      kind: CompletionItemKind.Function,
-      data: key
-    }));
+    if (lineText.match(/^\s*feature\s+$/) || lineText.match(/^\s*feature\s+"/)) {
+      return FEATURE_OPTIONS;
+    }
+
+    // If the line is empty or just whitespace/partial word the possible commands are shown.
+    if (!lineText.trim().includes(' ')) {
+      return MAIN_ARGS;
+    }
+
+    return [];
   }
 );
 
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
-    const data = BAMC_DATA[item.label];
-    if (data) {
-      item.detail = data.syntax;
-      item.documentation = data.description;
-    }
     return item;
-  }
-);
-
-// ------------------------------------------------------------------
-// 3. HOVER SUPPORT
-// ------------------------------------------------------------------
-connection.onHover(
-  (params: HoverParams): Hover | null => {
-    // Logic to find word under cursor would go here.
-    // For simplicity, we assume the LSP client handles word range detection mostly.
-    // A robust implementation requires analyzing the document at params.position.
-    return null; 
   }
 );
 
