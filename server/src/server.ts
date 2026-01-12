@@ -32,7 +32,7 @@ const MAIN_ARGS: CompletionItem[] =
     kind: CompletionItemKind.Keyword,
     detail: 'browser "type"',
     documentation: 'Specifies the browser type (chrome/firefox), this must be the first line, or it will default to firefox.',
-    insertText: 'browser' // Auto-adds space
+    insertText: 'browser'
   },
 
   {
@@ -40,7 +40,7 @@ const MAIN_ARGS: CompletionItem[] =
     kind: CompletionItemKind.Keyword,
     detail: 'feature "name" ...',
     documentation: 'Enables specific BAMC features like proxies or SSL settings.',
-    insertText: 'feature ' // Auto-adds space
+    insertText: 'feature '
   },
   {
     label: 'visit',
@@ -184,26 +184,37 @@ const BROWSER_OPTIONS: CompletionItem[] = [
 const FEATURE_OPTIONS: CompletionItem[] = 
 [
   {
+    label: '"add-extension"',
+    kind: CompletionItemKind.Value,
+    detail: "Downloads the extension, validates it's contents, then install it as an add-on to the current Selenium extension.",
+    documentation: 'Accepts direct .xpi and .crx links, alongside chrome webstore, and firefox addons',
+    insertText: '"add-extension" "path/to/extension"',
+    insertTextFormat: InsertTextFormat.Snippet
+  },
+
+  {
     label: '"disable-ssl"',
     kind: CompletionItemKind.Value,
     detail: 'Disable SSL Validation',
-    insertText: 'disable-ssl'
+    documentation: 'Format: "USER:PASS@IP:PORT" or "NULL:NULL@IP:PORT"',
+    insertText: 'disable-ssl',
+    insertTextFormat: InsertTextFormat.Snippet
   },
 
   {
     label: '"disable-pycache"',
     kind: CompletionItemKind.Value,
     detail: 'Disable __pycache__',
-    insertText: 'disable-pycache'
+    documentation: 'Disables __pycache__ generation during runtime.',
+    insertText: 'disable-pycache',
+    insertTextFormat: InsertTextFormat.Snippet
   },
 
-  // PROXIES (With Placeholders)
   {
     label: '"use-http-proxy"',
     kind: CompletionItemKind.Snippet,
     detail: 'HTTP Proxy with Args',
-    documentation: 'Format: "USER:PASS@IP:PORT" or "NULL:NULL@IP:PORT"',
-    // This snippet inserts the feature name AND the argument template
+    documentation: 'Instructs Selenium to start the instance with a HTTP Proxy',
     insertText: 'use-http-proxy" "${1:USER:PASS@IP:PORT}',
     insertTextFormat: InsertTextFormat.Snippet
   },
@@ -212,6 +223,7 @@ const FEATURE_OPTIONS: CompletionItem[] =
     label: '"use-https-proxy"',
     kind: CompletionItemKind.Snippet,
     detail: 'HTTPS Proxy with Args',
+    documentation: 'Instructs Selenium to start the instance with a HTTPS Proxy',
     insertText: 'use-https-proxy" "${1:USER:PASS@IP:PORT}',
     insertTextFormat: InsertTextFormat.Snippet
   },
@@ -220,6 +232,7 @@ const FEATURE_OPTIONS: CompletionItem[] =
     label: '"use-socks4-proxy"',
     kind: CompletionItemKind.Snippet,
     detail: 'SOCKS4 Proxy',
+    documentation: 'Instructs Selenium to start the instance with a SOCKS4 Proxy',
     insertText: 'use-socks4-proxy" "${1:USER:PASS@IP:PORT}',
     insertTextFormat: InsertTextFormat.Snippet
   },
@@ -228,6 +241,7 @@ const FEATURE_OPTIONS: CompletionItem[] =
     label: '"use-socks5-proxy"',
     kind: CompletionItemKind.Snippet,
     detail: 'SOCKS5 Proxy',
+    documentation: 'Instructs Selenium to start the instance with a SOCKS5 Proxy',
     insertText: 'use-socks5-proxy" "${1:USER:PASS@IP:PORT}',
     insertTextFormat: InsertTextFormat.Snippet
   }
