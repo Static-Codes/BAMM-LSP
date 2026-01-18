@@ -60,6 +60,14 @@ const MAIN_ARGS: CompletionItem[] =
     documentation: "Instructs Selenium to pause execution for the specified number of second(s). Supports decimals/floats for second values (ie. 0.5, .5)",
   },
 
+  {
+    label: 'add-cookie',
+    kind: CompletionItemKind.Function,
+    detail: 'add-cookie "cookie-name" "cookie-value"',
+    documentation: "Adds a cookie to the current Selenium session.",
+    insertText: 'add-cookie "cookie-name" "cookie-value"',
+    insertTextFormat: InsertTextFormat.Snippet,
+  },
   
   {
     label: 'add-header',

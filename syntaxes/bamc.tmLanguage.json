@@ -20,7 +20,7 @@
     },
     {
       "comment": "BAMC Actions",
-      "match": "\\b(add-header|add-headers|browser|click-exp|click|click-at-position|close-current-tab|end-javascript|fill-text-exp|fill-text|get-text|open-new-tab|save-as-html|save-as-html-exp|select-option|select-element|set-custom-useragent|start-javascript|take-screenshot|visit|wait-for-seconds|feature)\\b",
+      "match": "\\b(add-cookie|add-header|add-headers|browser|click-exp|click|click-at-position|close-current-tab|end-javascript|fill-text-exp|fill-text|get-text|open-new-tab|save-as-html|save-as-html-exp|select-option|select-element|set-custom-useragent|start-javascript|take-screenshot|visit|wait-for-seconds|feature)\\b",
       "name": "keyword.control.bamc"
     },
     {
