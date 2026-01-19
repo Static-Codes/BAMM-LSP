@@ -1,7 +1,7 @@
 # BAMM Language Server Protocol 🤖
 <img src="https://img.shields.io/github/v/release/static-codes/BAMM-LSP.svg">
 
-BAM Manager (BAMM) is a Dynamic Scripting Language (DSL) that compiles into Python 3.9+ code.
+**BAM Manager** (BAMM) is a Dynamic Scripting Language (DSL) that compiles into Python 3.9+ code.
 
 This DSL known as **BAMC** **(BAM Config)** simplifies Selenium by allowing you to write automation scripts in a more concise, readable, and English-like language.
 
