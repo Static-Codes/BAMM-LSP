@@ -1,8 +1,8 @@
 {
   "name": "bamc-language-support",
   "displayName": "BAMC Language Support (LSP)",
-  "description": "Language support for the BAMC format, powered by BrowserAutomationMaster Manager (BAMM!).",
-  "version": "1.0.1",
+  "description": "Language support for BAMC, the Dynamic Scripting Language (DSL) that powers BrowserAutomationMaster Manager (BAMM!).",
+  "version": "1.0.2",
   "publisher": "static-codes",
   "repository": {
     "url": "https://github.com/Static-Codes/BAMM-LSP"
