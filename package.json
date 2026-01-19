@@ -1,11 +1,16 @@
 {
   "name": "bamc-language-support",
-  "displayName": "BAMC Language Support",
+  "displayName": "BAMC Language Support (LSP)",
   "description": "Language support for the BAMC format, powered by BrowserAutomationMaster Manager (BAMM!).",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "static-codes",
+  "repository": {
+    "url": "https://github.com/Static-Codes/BAMM-LSP"
+  },
+  "icon": "bamm.ico",
+  "license": "MIT",
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.108.1"
   },
   "categories": [
     "Programming Languages"
