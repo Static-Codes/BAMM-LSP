@@ -1,1 +1,16 @@
-{ "files.exclude": { "node_modules": true, "out": true, "server/out": true, "client/out": true, ".gitignore": true, "*.py": false, } }
+{ 
+    "files.exclude": 
+    { 
+        "node_modules": true, 
+        "out": true, 
+        "server/out": true, 
+        "client/out": true, 
+        ".gitignore": true, 
+        "*.py": false, 
+    },
+
+    "files.associations": {
+        "*.bamc": "bamm"
+    }
+
+}
