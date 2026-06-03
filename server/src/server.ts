@@ -1,25 +1,21 @@
 import {
   createConnection,
   TextDocuments,
-  // Diagnostic,
-  // DiagnosticSeverity,
   ProposedFeatures,
   InitializeParams,
   CompletionItem,
   CompletionItemKind,
   TextDocumentPositionParams,
   TextDocumentSyncKind,
-  // InitializeResult,
   InsertTextFormat,
   TextEdit,
   Range,
-  InsertTextMode
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-var platform = process.platform
-var NLC = platform == "win32" ? "\r\n" : "\n"
+let platform = process.platform
+let NLC = platform == "win32" ? "\r\n" : "\n"
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);

@@ -1,6 +1,6 @@
 {
   "name": "bamc-server",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "BAMC Language Server",
   "dependencies": {
     "vscode-languageserver": "^9.0.1",
